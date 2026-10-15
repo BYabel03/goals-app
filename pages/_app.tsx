@@ -14,6 +14,7 @@ import { AuthProvider } from "context/AuthContext";
 //types
 type RequireAuthComponent = {
   requireAuth?: boolean;
+  calendarLayout?: boolean;
 } & AppProps["Component"];
 
 type Props = {
@@ -32,7 +33,9 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }: Props) {
   return (
     <SWRConfig value={config}>
       <SessionProvider session={session}>
-        {Component.requireAuth ? (
+        {Component.calendarLayout ? (
+          <Component {...pageProps} />
+        ) : Component.requireAuth ? (
           <RequireAuth>
             <UserLayout>
               <Component {...pageProps} />

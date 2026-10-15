@@ -1,34 +1,48 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Juntos · Calendario
 
-## Getting Started
+Calendario en español construido con Next.js, React, NextAuth y MongoDB.
 
-First, run the development server:
+- Vistas de mes, semana y agenda, navegación por fecha y búsqueda.
+- Crear, editar y eliminar eventos con fecha, hora de inicio y fin, lugar y notas.
+- Cuatro calendarios con colores y filtros: Personal, Trabajo, Bienestar y Social.
+- Eventos privados por cuenta, con acceso mediante Google o GitHub.
+- Vista de prueba con ejemplos y almacenamiento local, separada de los eventos de la cuenta.
+- Diseño adaptable a dispositivos móviles y formularios accesibles con teclado.
 
-```bash
-npm run dev
-# or
-yarn dev
+## Desarrollo
+
+El repositorio usa Next.js 12 y NextAuth 4.3.4, cuyo motor declarado requiere Node 16. Para reproducir el entorno de desarrollo con mise:
+
+```sh
+mise exec node@16.20.2 -- corepack yarn install --frozen-lockfile
+mise exec node@16.20.2 -- corepack yarn dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abre http://localhost:3000. Sin credenciales puedes explorar la vista de prueba; sus cambios se guardan solo en el navegador y no se importan a una cuenta.
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+## Activar las cuentas y el guardado en la nube
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+Copia `.env.example` a `.env.local` y configura:
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+- `MONGODB_URI`: URI de tu base MongoDB.
+- `NEXT_AUTH_SECRET`: secreto aleatorio para firmar las sesiones (por ejemplo, generado con `openssl rand -base64 32`).
+- `NEXTAUTH_URL`: URL de la aplicación, sin barra final (en desarrollo, `http://localhost:3000`).
+- `GOOGLE_ID` y `GOOGLE_SECRET`: credenciales de una aplicación OAuth de Google.
+- `GITHUB_ID` y `GITHUB_SECRET`: credenciales de una aplicación OAuth de GitHub.
 
-## Learn More
+Registra las URL de retorno `${NEXTAUTH_URL}/api/auth/callback/google` y `${NEXTAUTH_URL}/api/auth/callback/github` en los respectivos proveedores. No subas `.env.local` a GitHub. En producción utiliza HTTPS y configura las variables en tu plataforma de despliegue.
 
-To learn more about Next.js, take a look at the following resources:
+Cada evento se guarda en MongoDB con el correo de la sesión verificada por NextAuth. Las consultas y modificaciones siempre se limitan a esa cuenta; el cliente no puede elegir al propietario. Las fechas y horas se muestran en la hora local y los eventos comienzan y terminan el mismo día. No incluye recurrencias, invitaciones ni sincronización con Google Calendar.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Las variables `CLOUDINARY_*` del ejemplo pertenecen a las funciones sociales originales del repositorio; el calendario no las necesita.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+## Comprobaciones
 
-## Deploy on Vercel
+```sh
+mise exec node@16.20.2 -- corepack yarn lint
+mise exec node@16.20.2 -- corepack yarn tsc --noEmit
+mise exec node@16.20.2 -- corepack yarn build
+node --test tests/*.test.cjs
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+El inicio de sesión real necesita las credenciales OAuth y una base MongoDB accesible.

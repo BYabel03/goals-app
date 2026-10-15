@@ -1,14 +1,7 @@
-import type { NextPage } from "next";
+import Calendar from "components/Calendar";
 
-import ComingSoon from "components/ComingSoon";
-
-//https://tiptap.dev/examples/default
-const Landing: NextPage = () => {
-  return (
-    <>
-      <ComingSoon />
-    </>
-  );
-};
-
-export default Landing;
+function CalendarPage() {
+  return <Calendar />;
+}
+CalendarPage.calendarLayout = true;
+export default CalendarPage;

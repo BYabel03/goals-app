@@ -1,5 +1,10 @@
 export const linksList = [
   {
+    href: "/",
+    label: "Calendario",
+    icon: <i className="uil uil-calendar-alt"></i>,
+  },
+  {
     href: "/home",
     label: "Home",
     icon: <i className="uil uil-home"></i>,

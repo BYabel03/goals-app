@@ -7,10 +7,6 @@ const MONGODB_URI = process.env.MONGODB_URI;
 const errorMessage =
   "Please define the MONGODB_URI environment variable inside .env.local";
 
-if (!MONGODB_URI) {
-  throw new Error(errorMessage);
-}
-
 declare global {
   var mongoose: dbConnectionCache;
 }
@@ -44,7 +40,12 @@ async function dbConnect() {
       return mongoose;
     });
   }
-  cached.conn = await cached.promise;
+  try {
+    cached.conn = await cached.promise;
+  } catch (error) {
+    cached.promise = null;
+    throw error;
+  }
   return cached.conn;
 }
 
