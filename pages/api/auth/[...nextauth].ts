@@ -7,25 +7,26 @@ import { register } from "controllers/user";
 import type { User } from "models/user";
 
 export default NextAuth({
-  // Configure one or more authentication providers
+  // A provider is available only after both OAuth credentials are configured.
   providers: [
-    GithubProvider({
-      clientId: process.env.GITHUB_ID,
-      clientSecret: process.env.GITHUB_SECRET,
-    }),
-    GoogleProvider({
-      clientId: process.env.GOOGLE_ID || "",
-      clientSecret: process.env.GOOGLE_SECRET || "",
-      authorization: {
-        params: {
-          prompt: "consent",
-          access_type: "offline",
-          response_type: "code",
-        },
-      },
-    }),
-    // ...add more providers here
+    ...(process.env.GITHUB_ID && process.env.GITHUB_SECRET
+      ? [
+          GithubProvider({
+            clientId: process.env.GITHUB_ID,
+            clientSecret: process.env.GITHUB_SECRET,
+          }),
+        ]
+      : []),
+    ...(process.env.GOOGLE_ID && process.env.GOOGLE_SECRET
+      ? [
+          GoogleProvider({
+            clientId: process.env.GOOGLE_ID,
+            clientSecret: process.env.GOOGLE_SECRET,
+          }),
+        ]
+      : []),
   ],
+  pages: { error: "/" },
   secret: process.env.NEXT_AUTH_SECRET,
   callbacks: {
     async session({ session }) {

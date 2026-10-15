@@ -1,6 +1,7 @@
 import { CSSProperties, FormEvent, useEffect, useRef, useState } from "react";
 import Head from "next/head";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { signIn, signOut, useSession } from "next-auth/react";
 import {
   addDays,
@@ -116,6 +117,7 @@ const storageKey = "juntos-calendar-demo-v1";
 
 export default function Calendar() {
   const { data: session, status } = useSession();
+  const router = useRouter();
   const [today, setToday] = useState<Date | null>(null);
   const [cursor, setCursor] = useState(new Date(2026, 0, 1, 12));
   const [selected, setSelected] = useState("");
@@ -129,6 +131,8 @@ export default function Calendar() {
   const [editing, setEditing] = useState<CalendarEvent | null>(null);
   const [saving, setSaving] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
+  const [providers, setProviders] = useState<string[] | null>(null);
+  const [providerError, setProviderError] = useState(false);
   const dialogRef = useRef<NativeDialog>(null);
   const loginRef = useRef<NativeDialog>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
@@ -201,6 +205,31 @@ export default function Calendar() {
     if (loginOpen) loginRef.current?.showModal();
     else loginRef.current?.close();
   }, [loginOpen]);
+
+  useEffect(() => {
+    if (typeof router.query.error === "string") setLoginOpen(true);
+  }, [router.query.error]);
+
+  useEffect(() => {
+    if (!loginOpen || isAuthenticated) return;
+    let active = true;
+    setProviders(null);
+    setProviderError(false);
+    fetch("/api/auth/providers")
+      .then(async (response) => {
+        if (!response.ok) throw new Error("Provider lookup failed");
+        return response.json();
+      })
+      .then((data) => {
+        if (active) setProviders(Object.keys(data));
+      })
+      .catch(() => {
+        if (active) setProviderError(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, [loginOpen, isAuthenticated]);
 
   const visible = events
     .filter(
@@ -1017,20 +1046,43 @@ export default function Calendar() {
           </button>
         ) : (
           <>
-            <button
-              className={s.loginButton}
-              onClick={() => signIn("google", { callbackUrl: "/" })}
-            >
-              <span>G</span> Continuar con Google{" "}
-              <Icon name="arrow" size={18} />
-            </button>
-            <button
-              className={s.loginButton}
-              onClick={() => signIn("github", { callbackUrl: "/" })}
-            >
-              <Icon name="grid" size={18} /> Continuar con GitHub{" "}
-              <Icon name="arrow" size={18} />
-            </button>
+            {typeof router.query.error === "string" && (
+              <p role="alert" className={s.error}>
+                No pudimos iniciar tu sesión. Inténtalo de nuevo o continúa en
+                la vista de prueba.
+              </p>
+            )}
+            {providerError ? (
+              <p role="alert">
+                No se pudieron cargar las opciones de acceso. Cierra esta
+                ventana e inténtalo de nuevo.
+              </p>
+            ) : providers === null ? (
+              <p role="status">Cargando opciones de acceso…</p>
+            ) : providers.length === 0 ? (
+              <p>
+                El inicio de sesión aún no está disponible. Puedes continuar
+                explorando la vista de prueba.
+              </p>
+            ) : null}
+            {providers?.includes("google") && (
+              <button
+                className={s.loginButton}
+                onClick={() => signIn("google", { callbackUrl: "/" })}
+              >
+                <span>G</span> Continuar con Google{" "}
+                <Icon name="arrow" size={18} />
+              </button>
+            )}
+            {providers?.includes("github") && (
+              <button
+                className={s.loginButton}
+                onClick={() => signIn("github", { callbackUrl: "/" })}
+              >
+                <Icon name="grid" size={18} /> Continuar con GitHub{" "}
+                <Icon name="arrow" size={18} />
+              </button>
+            )}
             <small>Los eventos de prueba permanecen en este navegador.</small>
           </>
         )}

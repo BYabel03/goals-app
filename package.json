@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "config:init": "node scripts/config.cjs init",
+    "config:check": "node scripts/config.cjs"
   },
   "dependencies": {
     "avvvatars-react": "^0.4.2",

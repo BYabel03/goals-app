@@ -22,13 +22,17 @@ Abre http://localhost:3000. Sin credenciales puedes explorar la vista de prueba;
 
 ## Activar las cuentas y el guardado en la nube
 
-Copia `.env.example` a `.env.local` y configura:
+Sigue la [guía paso a paso para activar cuentas](docs/activar-cuentas.md). Puedes generar la configuración privada local con `mise exec node@16.20.2 -- corepack yarn config:init` y revisar lo pendiente con `mise exec node@16.20.2 -- corepack yarn config:check`.
+
+Configura en `.env.local`:
 
 - `MONGODB_URI`: URI de tu base MongoDB.
 - `NEXT_AUTH_SECRET`: secreto aleatorio para firmar las sesiones (por ejemplo, generado con `openssl rand -base64 32`).
 - `NEXTAUTH_URL`: URL de la aplicación, sin barra final (en desarrollo, `http://localhost:3000`).
-- `GOOGLE_ID` y `GOOGLE_SECRET`: credenciales de una aplicación OAuth de Google.
-- `GITHUB_ID` y `GITHUB_SECRET`: credenciales de una aplicación OAuth de GitHub.
+- `GOOGLE_ID` y `GOOGLE_SECRET`: credenciales de una aplicación OAuth de Google (opcional si usas GitHub).
+- `GITHUB_ID` y `GITHUB_SECRET`: credenciales de una aplicación OAuth de GitHub (opcional si usas Google).
+
+Hace falta al menos uno de los dos proveedores. Cada botón de acceso aparece cuando están configuradas sus dos credenciales.
 
 Registra las URL de retorno `${NEXTAUTH_URL}/api/auth/callback/google` y `${NEXTAUTH_URL}/api/auth/callback/github` en los respectivos proveedores. No subas `.env.local` a GitHub. En producción utiliza HTTPS y configura las variables en tu plataforma de despliegue.
 
